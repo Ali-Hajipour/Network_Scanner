@@ -84,3 +84,65 @@ def find_hosts(network : str , max_workers : int = 50) -> List[str]:
                 pass
 
                 return sorted(live_hosts, key=lambda ip: ipaddress.ip_address(ip))
+
+
+def scan_port(ip : str ,port : int , timeout : float = 1.0 )-> Optional[str]:
+    try:
+        sock = socket.socket(socket.AF_INET , socket.SOCK_STREAM)
+        sock.settimeout(timeout)
+        result = sock.connect_ex((ip , port))
+        if result ==0 :
+            banner = grab_banner(sock)
+            sock.close()
+            return banner if banner else ""
+
+        else:
+            sock.close()
+            return None
+
+    except (socket.error , socket.timeout , OSError):
+        return None
+
+
+def grab_banner(sock : socket.socket , size : int =1024) ->Optional[str]:
+    try:
+        sock.settimeout(1.5)
+        banner = sock.recv(size)
+        return banner.decode("utf-8" , errors="ignore").strip()
+    except (socket.timeout , OSError):
+        return None
+
+
+
+def scan_host_ports (ip :str , ports : Optional[list[int]] = None , max_workers : int = 100 ,  timeout : float = 1.0 ) -> List[dict]:
+
+    ports = list(COMMON_SERVICE_PORTS.keys()) if ports is None else ports
+    open_ports = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers= max_workers) as executor:
+        future_to_port = {
+            executor.submit(scan_port, ip, port, timeout): port
+            for port in ports
+        }
+
+        for future in concurrent.futures.as_completed(future_to_port):
+            port = future_to_port[future]
+            try:
+                result = future.result()
+                if result is not None :
+                    open_ports.append({
+                        "port" : port,
+                        "ip" : ip,
+                        "service" : COMMON_SERVICE_PORTS.get(port , "Unknown"),
+                        "banner" : result[:100] if result else ""
+                    })
+            except Exception :
+                pass
+
+    return sorted(open_ports, key=lambda port: port["port"])
+
+
+
+
+
+

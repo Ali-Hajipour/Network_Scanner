@@ -141,6 +141,69 @@ def scan_host_ports (ip :str , ports : Optional[list[int]] = None , max_workers 
 
     return sorted(open_ports, key=lambda port: port["port"])
 
+def ful_scan (
+        target_ip : str ,
+        ports :Optional[list[int]] = None ,
+        port_workers : int =100 ,
+        ping_workers : int =50,
+        timeout : float = 1.0 ,
+) -> dict :
+    start_time = time.time()
+
+    if "/" in target_ip :
+        live_hosts = find_hosts(target_ip , max_workers = ping_workers)
+    else :
+        print(f"/n Scanning if ip : {target_ip} is available ... ")
+
+        if ping_host(target_ip):
+            print(f"  [+] {target_ip} is Available")
+            live_hosts = [target_ip]
+        else :
+            print(f"  [!] {target_ip} May be Down (Scanning Anyway)")
+            live_hosts = [target_ip]
+
+    results = []
+
+
+    for ip in live_hosts :
+
+        open_ports = scan_host_ports(ip , ports , timeout = timeout )
+
+        host_result = {
+            "ip" : ip,
+            "Status" : "Up",
+            ports : open_ports,
+            "Port Count" : len(open_ports)
+        }
+
+        try :
+            hostname = socket.gethostbyaddr(ip)[0]
+            host_result["Hostname"] = hostname
+        except socket.herror :
+            host_result["Hostname"] = "Unknown"
+
+        results.append(host_result)
+
+        if open_ports :
+            print(f" {'PORT': < 8}  {'STATE' : < 8} {'Service' : <12} BANNER")
+            print(f"'-' * 60")
+
+            for p in open_ports:
+                banner_preview = p["banner"][:40].replace("\n", " ") if p["banner"] else ""
+                print(f"  {p['port']:<8} {p['state']:<8} {p['service']:<12} {banner_preview}")
+            else :
+                print(f"  [!] No open ports found in scanned range")
+    time_consumed = time.time() - start_time
+
+    return  {
+        "target_ip" : target_ip,
+        "Scan_time" : time_consumed,
+        "Hosts Scanned Count" : len(live_hosts),
+        "Up hosts Count" : len(results),
+        "results" : results
+
+    }
+
 
 
 

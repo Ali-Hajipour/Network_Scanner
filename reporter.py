@@ -11,6 +11,7 @@ def print_summary(scan_results : Dict) -> None:
     hosts_up = scan_results.get("hosts_up", 0)
     total = scan_results.get("total" , 0)
 
+    # Overall overview of Scanned Hosts
     print("\n" + "=" *60)
     print("SCAN IS COMPLETED")
     print("=" *60)
@@ -20,13 +21,34 @@ def print_summary(scan_results : Dict) -> None:
     print(f"Time Consumed : {time_consumed}" )
     print("=" *60)
 
-    if not results:
+    if not results: # if no hosts are found.
         print("\n No Live Hosts Found. \n")
         return
 
 
-    for hosts in results:
-        ip = hosts["ip"]
-        hostname= hosts.get("hostname" , "")
-        open_ports = hosts.get("open_ports" , [])
+    for host in results: # Information about each specific alive host.
+        ip = host["ip"]
+        hostname= host.get("hostname" , "")
+        open_ports = host.get("open_ports" , [])
+
+
+        label = f"{ip}"
+
+        if hostname : #it adds the hostname to the label if the host name is available
+            label += f" ({hostname})"
+
+        print(f"Host : {label}")
+        print(f"Open Port(s) : {host['open_ports']}")
+
+
+        if open_ports: #printing open ports
+            print(f"\n {'PORT' :< 8} {'SERVICE' : < 14} BANNER ")
+            print(f"{'-' * 60}")
+            for port in open_ports: # g
+                banner = port.get("banner" , "").split()[0][:40]
+                print(f"{port['port']:< 8} {port['service'] : < 14} {banner}")
+            else:
+                print("No open ports detected.")
+            print(f"{'='*60}")
+
 

@@ -52,3 +52,30 @@ def print_summary(scan_results : Dict) -> None:
             print(f"{'='*60}")
 
 
+def save_report(scan_results : Dict ,  file_path : str) -> None:
+    output = {
+        #General data about the scan
+        "scan_metadata" : {
+            "tool" : "Network Scanner (Created by Ali Hajipour)",
+            "phase" : 1,
+            "timestamp" : datetime.utcnow().isoformat()+ "UTC",
+            "target" : scan_results.get("target" + ""),
+            "scan_time" : scan_results.get("time_consumed" , 0),
+            "hosts_scanned" : scan_results.get("hosts_scanned" , 0),
+            "hosts_up" : scan_results.get("hosts_up" , 0)
+        },
+        #Specific information about the scan.
+        "hosts" : scan_results.get("hosts" , []),
+    }
+
+    try: # writing the results on a file
+        with open( file_path , "w" ,encoding = "utf-8" ) as f:
+            json.dump(output , f , indent = 2)
+            print(f"Results Saved to {os.path.abspath(file_path)} Successfully !")
+    except OSError as e:
+        print(f"Unfortunately, Results Failed to Save : {e}")
+
+
+def load_report(file_path :  str ) -> Dict:
+    with open(file_path , "r", encoding = "utf-8" ) as f:
+        return json.load(f)

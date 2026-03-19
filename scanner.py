@@ -62,7 +62,7 @@ def find_hosts(network : str , max_workers : int = 50) -> List[str]:
     except ValueError  as e:
         raise ValueError(f"Inavlid network address {e}")
 
-    hosts = [ ip(str) for ip in net.hosts() ]
+    hosts = [ str(ip) for ip in net.hosts() ]
 
     live_hosts = []
 
@@ -78,12 +78,12 @@ def find_hosts(network : str , max_workers : int = 50) -> List[str]:
 
 
             try :
-                if future.result(): live_hosts.append(ip); print("  [+] Host up: {ip}")
+                if future.result(): live_hosts.append(ip); print(f"  [+] Host up: {ip}")
 
             except Exception :
                 pass
 
-                return sorted(live_hosts, key=lambda ip: ipaddress.ip_address(ip))
+    return sorted(live_hosts, key=lambda ip: ipaddress.ip_address(ip))
 
 
 def scan_port(ip : str ,port : int , timeout : float = 1.0 )-> Optional[str]:
@@ -133,6 +133,7 @@ def scan_host_ports (ip :str , ports : Optional[list[int]] = None , max_workers 
                     open_ports.append({
                         "port" : port,
                         "ip" : ip,
+                        "state" : "open",
                         "service" : COMMON_SERVICE_PORTS.get(port , "Unknown"),
                         "banner" : result[:100] if result else ""
                     })
@@ -142,7 +143,7 @@ def scan_host_ports (ip :str , ports : Optional[list[int]] = None , max_workers 
     return sorted(open_ports, key=lambda port: port["port"])
 
 def ful_scan (
-        target_ip : str ,
+        target_ip: str ,
         ports :Optional[list[int]] = None ,
         port_workers : int =100 ,
         ping_workers : int =50,
@@ -167,26 +168,26 @@ def ful_scan (
 
     for ip in live_hosts :
 
-        open_ports = scan_host_ports(ip , ports , timeout = timeout )
+        open_ports = scan_host_ports(ip, ports, max_workers=port_workers, timeout=timeout)
 
         host_result = {
             "ip" : ip,
             "Status" : "Up",
-            ports : open_ports,
+            "open_ports" : open_ports,
             "Port Count" : len(open_ports)
         }
 
         try :
             hostname = socket.gethostbyaddr(ip)[0]
-            host_result["Hostname"] = hostname
+            host_result["hostname"] = hostname
         except socket.herror :
-            host_result["Hostname"] = "Unknown"
+            host_result["hostname"] = "Unknown"
 
         results.append(host_result)
 
         if open_ports :
-            print(f" {'PORT': < 8}  {'STATE' : < 8} {'Service' : <12} BANNER")
-            print(f"'-' * 60")
+            print(f" {'PORT': <8}  {'STATE' : <8} {'Service' : <12} BANNER")
+            print("-" * 60)
 
             for p in open_ports:
                 banner_preview = p["banner"][:40].replace("\n", " ") if p["banner"] else ""
@@ -195,13 +196,12 @@ def ful_scan (
                 print(f"  [!] No open ports found in scanned range")
     time_consumed = time.time() - start_time
 
-    return  {
-        "target_ip" : target_ip,
-        "Scan_time" : time_consumed,
-        "Hosts Scanned Count" : len(live_hosts),
-        "Up hosts Count" : len(results),
-        "results" : results
-
+    return {
+        "target":        target_ip,
+        "scan_time":     time_consumed,
+        "hosts_scanned": len(live_hosts),
+        "hosts_up":      len(results),
+        "results":       results,
     }
 
 

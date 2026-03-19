@@ -59,9 +59,10 @@ def main():
 
     parser.add_argument(
         "--threads",
-        type = int,
-        metavar= "N",
-        help = "Number of concurrent threads for port scanning (default: 100)"
+        type=int,
+        default=100,
+        metavar="N",
+        help="Number of concurrent threads for port scanning (default: 100)"
     )
 
     parser.add_argument(
@@ -119,8 +120,8 @@ def main():
 
     print_summary(result)
 
-    if args.output :
-        save_report(result)
+    if args.output:
+        save_report(result, args.output)
     return 0
 if __name__ == "__main__":
     sys.exit(main())

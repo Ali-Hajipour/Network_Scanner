@@ -7,9 +7,9 @@ def print_summary(scan_results : Dict) -> None:
 
     results = scan_results.get("results" , [])
     target = scan_results.get("target" , "")
-    time_consumed = scan_results.get("time_consumed" , 0)
+    time_consumed = scan_results.get("scan_time" , 0)
     hosts_up = scan_results.get("hosts_up", 0)
-    total = scan_results.get("total" , 0)
+    total = scan_results.get("hosts_scanned" , 0)
 
     # Overall overview of Scanned Hosts
     print("\n" + "=" *60)
@@ -42,11 +42,11 @@ def print_summary(scan_results : Dict) -> None:
 
 
         if open_ports: #printing open ports
-            print(f"\n {'PORT' :< 8} {'SERVICE' : < 14} BANNER ")
+            print(f"\n  {'PORT':<8} {'SERVICE':<14} BANNER")
             print(f"{'-' * 60}")
             for port in open_ports: # g
-                banner = port.get("banner" , "").split()[0][:40]
-                print(f"{port['port']:< 8} {port['service'] : < 14} {banner}")
+                banner = port.get("banner", "").split("\n")[0][:40]
+                print(f"  {port['port']:<8} {port['service']:<14} {banner}")
             else:
                 print("No open ports detected.")
             print(f"{'='*60}")
@@ -59,13 +59,13 @@ def save_report(scan_results : Dict ,  file_path : str) -> None:
             "tool" : "Network Scanner (Created by Ali Hajipour)",
             "phase" : 1,
             "timestamp" : datetime.utcnow().isoformat()+ "UTC",
-            "target" : scan_results.get("target" + ""),
-            "scan_time" : scan_results.get("time_consumed" , 0),
+            "target": scan_results.get("target", ""),
+            "scan_time": scan_results.get("scan_time", 0),
             "hosts_scanned" : scan_results.get("hosts_scanned" , 0),
             "hosts_up" : scan_results.get("hosts_up" , 0)
         },
         #Specific information about the scan.
-        "hosts" : scan_results.get("hosts" , []),
+        "hosts": scan_results.get("results", []),
     }
 
     try: # writing the results on a file

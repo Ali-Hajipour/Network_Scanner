@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetScan — Network Scanner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="bg-grid"></div>
+
+<header>
+    <div class="header-inner">
+        <div class="logo">
+            <span class="logo-bracket">[</span>
+            <span class="logo-text">NETSCAN</span>
+            <span class="logo-bracket">]</span>
+        </div>
+        <div class="header-meta">
+            <span class="version-badge">v1.0 — Phase 1</span>
+            <div class="status-dot" id="status-dot"></div>
+            <span class="status-text" id="status-text">READY</span>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="panel scan-panel">
+        <div class="panel-label">01 — TARGET CONFIGURATION</div>
+        <div class="form-grid">
+
+            <div class="field full-width">
+                <label class="field-label">TARGET</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">→</span>
+                    <input type="text" id="target" class="input"
+                           placeholder="192.168.1.1 or 192.168.1.0/24"
+                           autocomplete="off" spellcheck="false"/>
+                </div>
+                <span class="field-hint">Single IP or subnet in CIDR notation</span>
+            </div>
+
+            <div class="field">
+                <label class="field-label">THREADS</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">→</span>
+                    <input type="number" id="threads" class="input" value="100" min="1" max="500"/>
+                </div>
+                <span class="field-hint">Concurrent threads (1–500)</span>
+            </div>
+
+            <div class="field">
+                <label class="field-label">TIMEOUT</label>
+                <div class="input-wrapper">
+                    <span class="input-prefix">→</span>
+                    <input type="number" id="timeout" class="input" value="1.0" step="0.1" min="0.1" max="10"/>
+                </div>
+                <span class="field-hint">Seconds per port (0.1–10)</span>
+            </div>
+
+            <div class="field full-width">
+                <div class="ports-header">
+                    <label class="field-label">PORTS</label>
+                    <div class="ports-actions">
+                        <button class="ports-action-btn" onclick="selectAllPorts()">SELECT ALL</button>
+                        <button class="ports-action-btn" onclick="clearAllPorts()">CLEAR</button>
+                    </div>
+                </div>
+                <div class="port-toggles" id="port-toggles"></div>
+                <div class="ports-summary">
+                        <span class="field-hint">
+                            Selected: <span id="ports-count">0</span> port(s)
+                            &nbsp;—&nbsp;
+                            <span id="ports-preview">none selected</span>
+                        </span>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="scan-btn" id="scan-btn" onclick="startScan()">
+            <span class="btn-text">INITIATE SCAN</span>
+            <span class="btn-icon">▶</span>
+        </button>
+    </section>
+
+    <section class="stats-bar" id="stats-bar" style="display:none">
+        <div class="stat">
+            <span class="stat-value" id="stat-target">—</span>
+            <span class="stat-label">TARGET</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-value" id="stat-scanned">—</span>
+            <span class="stat-label">HOSTS SCANNED</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-value" id="stat-up">—</span>
+            <span class="stat-label">HOSTS UP</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <span class="stat-value" id="stat-time">—</span>
+            <span class="stat-label">SCAN TIME</span>
+        </div>
+    </section>
+
+    <section class="panel results-panel" id="results-panel" style="display:none">
+        <div class="panel-label">02 — SCAN RESULTS</div>
+        <div id="results-container"></div>
+    </section>
+
+    <div class="error-panel" id="error-panel" style="display:none">
+        <span class="error-icon">⚠</span>
+        <span id="error-message"></span>
+    </div>
+
+    <div class="loading-panel" id="loading-panel" style="display:none">
+        <div class="loading-inner">
+            <div class="scanner-line"></div>
+            <div class="loading-text">
+                <span id="loading-message">SCANNING TARGET...</span>
+            </div>
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+    <span id="author">Made by Ali Hajipour</span>
+</main>
+
+<script src="/static/script.js"></script>
+</body>
+</html>

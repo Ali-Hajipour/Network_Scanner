@@ -62,7 +62,7 @@ def get_common_ports():
         ]
     }
 
-@app.get("/scan")
+@app.post("/scan")
 def run_scan(request : ScanRequest):
     ports = parse_ports(request.ports)
 
